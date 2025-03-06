@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Compress and optimize your images online. Supports JPG, PNG, and WebP formats. Fast, secure, and easy to use.">
+  <meta name="keywords" content="image compressor, compress images, image optimization, JPG, PNG, WebP">
+  <meta name="author" content="Your Name">
+  <title>Image Compressor - Optimize Your Images</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #fff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #444;
+      margin-bottom: 20px;
+      font-size: 2rem;
+    }
+
+    p {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    /* Drag & Drop Area */
+    #drop-area {
+      border: 2px dashed #007bff;
+      border-radius: 10px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 20px;
+      background-color: #f9f9f9;
+      transition: all 0.3s ease;
+    }
+
+    #drop-area.highlight {
+      border-color: #0056b3;
+      background-color: #e9f5ff;
+    }
+
+    #browse-link {
+      color: #007bff;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* Controls Section */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .compression-control, .format-control {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-right: 10px;
+      color: #555;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      font-size: 1rem;
+      color: #333;
+    }
+
+    /* Preview Section */
+    #preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    #preview img {
+      max-width: 100px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    #preview img:hover {
+      transform: scale(1.1);
+    }
+
+    /* Download Button */
+    #download-all {
+      display: block;
+      width: 100%;
+      max-width: 200px;
+      margin: 20px auto;
+      padding: 12px 20px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s ease;
+    }
+
+    #download-all:hover {
+      background: #0056b3;
+    }
+
+    #download-all:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        margin: 20px;
+        padding: 15px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+
+      #drop-area {
+        padding: 20px;
+      }
+
+      #preview img {
+        max-width: 80px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.3rem;
+      }
+
+      p {
+        font-size: 0.9rem;
+      }
+
+      #drop-area {
+        padding: 15px;
+      }
+
+      select {
+        font-size: 0.9rem;
+      }
+
+      #download-all {
+        font-size: 0.9rem;
+        padding: 10px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Image Compressor</h1>
+    <p>Upload and compress your images to reduce file size without losing quality.</p>
+
+    <!-- Drag & Drop Upload Area -->
+    <div id="drop-area">
+      <p>Drag & Drop images here or <span id="browse-link">browse</span></p>
+      <input type="file" id="file-input" accept="image/*" multiple>
+    </div>
+
+    <!-- Controls Section -->
+    <div class="controls">
+      <div class="compression-control">
+        <label for="compression-level">Compression Level:</label>
+        <select id="compression-level">
+          <option value="0.7">Low</option>
+          <option value="0.5">Medium</option>
+          <option value="0.3">High</option>
+        </select>
+      </div>
+      <div class="format-control">
+        <label for="output-format">Output Format:</label>
+        <select id="output-format">
+          <option value="jpg">JPG</option>
+          <option value="png">PNG</option>
+          <option value="webp">WebP</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Compressed Images Preview -->
+    <div id="preview"></div>
+
+    <!-- Download Button -->
+    <button id="download-all" disabled>Download All</button>
+  </div>
+
+  <script>
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('file-input');
+    const preview = document.getElementById('preview');
+    const compressionLevel = document.getElementById('compression-level');
+    const outputFormat = document.getElementById('output-format');
+    const downloadAllButton = document.getElementById('download-all');
+
+    let files = [];
+
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    // Highlight drop area when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropArea.addEventListener(eventName, () => dropArea.classList.add('highlight'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, () => dropArea.classList.remove('highlight'), false);
+    });
+
+    // Handle dropped files
+    dropArea.addEventListener('drop', handleDrop, false);
+    fileInput.addEventListener('change', handleFiles, false);
+
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const newFiles = dt.files;
+      handleFiles({ target: { files: newFiles } });
+    }
+
+    function handleFiles(e) {
+      files = [...files, ...e.target.files];
+      renderPreview();
+    }
+
+    // Render preview of uploaded images
+    function renderPreview() {
+      preview.innerHTML = '';
+      files.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = document.createElement('img');
+          img.src = reader.result;
+          preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+      downloadAllButton.disabled = false;
+    }
+
+    // Compress and download images
+    downloadAllButton.addEventListener('click', () => {
+      files.forEach((file, index) => {
+        compressImage(file, index);
+      });
+    });
+
+    function compressImage(file, index) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+
+          // Set compression level
+          const quality = parseFloat(compressionLevel.value);
+
+          // Convert to selected format
+          canvas.toBlob((blob) => {
+            const link = document.createElement('a');
+            link.download = `compressed-image-${index + 1}.${outputFormat.value}`;
+            link.href = URL.createObjectURL(blob);
+            link.click();
+          }, `image/${outputFormat.value}`, quality);
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+  </script>
+</body>
+</html>
